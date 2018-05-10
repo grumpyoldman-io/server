@@ -1,0 +1,2 @@
+# server
+Home Automation Server

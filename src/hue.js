@@ -33,9 +33,21 @@ const init = () => new Promise((resolve, reject) => {
               api.lightStatus(lightId)
                 .then((light) => {
                   console.log('set', lightId, !light.state.on)
-                  api.setLightState(lightId, {
-                    on: !light.state.on
-                  })
+                  if (!light.state.on) { // turn on and reset
+                    api.setLightState(lightId, {
+                      on: true,
+                      bri: 254,
+                      hue: 14948,
+                      sat: 143,
+                      effect: 'none',
+                      ct: 365
+                    })
+                  } else { // turn off
+                    api.setLightState(lightId, {
+                      ...light.state,
+                      on: false
+                    })
+                  }
                 })
             }
           }

@@ -1,12 +1,19 @@
 {
   "name": "server",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Home Automation Server",
   "main": "src/index.js",
   "repository": "git@github.com:grumpyoldman-io/server.git",
   "author": "grumpyoldman-io <hello@grumpyoldman.io>",
   "license": "MIT",
   "private": false,
+  "scripts": {
+    "start": "babel-node src/index.js",
+    "build": "npm run lint && webpack --config ./config/webpack.js --mode production",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "precommit": "npm run lint"
+  },
   "dependencies": {
     "dotenv": "5.0.1",
     "dotenv-expand": "4.2.0",
@@ -14,6 +21,20 @@
     "node-hue-api": "2.4.2"
   },
   "devDependencies": {
-    "piping": "1.0.0-rc.4"
+    "@babel/core": "7.0.0-beta.46",
+    "@babel/node": "7.0.0-beta.46",
+    "@babel/preset-env": "7.0.0-beta.46",
+    "babel-loader": "^8.0.0-beta",
+    "babel-polyfill": "6.26.0",
+    "eslint": "4.19.1",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-plugin-import": "^2.11.0",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-promise": "^3.7.0",
+    "eslint-plugin-standard": "^3.1.0",
+    "husky": "0.14.3",
+    "piping": "1.0.0-rc.4",
+    "webpack": "4.8.1",
+    "webpack-cli": "2.1.3"
   }
 }

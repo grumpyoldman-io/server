@@ -1,17 +1,18 @@
-'use strict';
+'use strict'
 
-// Do this as the first thing so that any code reading it knows the right env.
-process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+// Packages
+import communication from './communication'
+import hue from './hue'
 
 // Makes the script crash on unhandled rejections instead of silently
 // ignoring them. In the future, promise rejections that are not handled will
 // terminate the Node.js process with a non-zero exit code.
 process.on('unhandledRejection', err => {
-  throw err;
-});
+  throw err
+})
 
 // Ensure environment variables are read.
-require('../config/env');
+require('../config/env')
 
 if (process.env.NODE_ENV === 'development') {
   require('piping')({
@@ -19,12 +20,6 @@ if (process.env.NODE_ENV === 'development') {
     ignore: /(\/\.|~$|node_modules\/$)/i
   })
 }
-
-// Packages
-const paths = require('../config/paths')
-const communication = require('./communication');
-const hue = require('./hue');
-const appName = require(paths.appPackageJson).name;
 
 // Start
 hue()
@@ -39,7 +34,12 @@ hue()
       }
     })
       .then(() => {
-
-        console.log(`${appName} has started :)`)
+        console.log(`Server has started :)`)
       })
+      .catch((err) => {
+        console.error(`\n\nSomething went wrong, ${err.message}`)
+      })
+  })
+  .catch((err) => {
+    console.error(`\n\nSomething went wrong, ${err.message}`)
   })

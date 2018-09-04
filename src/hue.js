@@ -51,6 +51,17 @@ const init = () => new Promise((resolve, reject) => {
                 })
             }
           }
+
+          // and turn off the light when it is on after booting
+          api.lightStatus(lightId)
+            .then((light) => {
+              if (light.state.on) {
+                api.setLightState(lightId, {
+                  ...light.state,
+                  on: false
+                })
+              }
+            })
         })
 
         resolve(lights)

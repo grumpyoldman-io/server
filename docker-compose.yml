@@ -1,0 +1,9 @@
+version: '3.7'
+services:
+  app:
+    build: .
+    volumes:
+      - ./:/home/node/api
+    working_dir: /home/node/api
+    ports:
+      - $PORT:$PORT

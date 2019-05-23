@@ -12,7 +12,10 @@
     "validate": "tsc --noEmit",
     "lint": "tslint -p \"tsconfig.json\" -t stylish \"src/**/*.{ts,tsx}\""
   },
-  "dependencies": {},
+  "dependencies": {
+    "inversify": "5.0.1",
+    "reflect-metadata": "0.1.13"
+  },
   "devDependencies": {
     "@types/node": "12.0.2",
     "husky": "2.3.0",

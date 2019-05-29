@@ -15,9 +15,9 @@
     "emitDecoratorMetadata": true,
     "baseUrl": ".",
     "lib": ["es6"],
-    "typeRoots": ["./typings", "./node_modules/@types"],
+    "typeRoots": ["./node_modules/@types"],
     "types": ["reflect-metadata", "node"],
     "outDir": "build"
   },
-  "exclude": ["build/**/*", "node_modules"]
+  "exclude": ["build", "node_modules"]
 }

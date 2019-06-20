@@ -5,15 +5,21 @@
   "author": "Marvin de Bruin<hello@grumpyoldman.io>",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node src/app",
-    "start:watch": "nodemon --exec \"ts-node\" --watch src/**/*.* src/app",
-    "build": "tsc -p \"tsconfig.json\"",
+    "start": "NODE_ENV=production ts-node src/index",
+    "start:watch": "NODE_ENV=development nodemon --exec \"ts-node\" --watch src/**/*.* src/index",
+    "build": "rm -rf ./build && NODE_ENV=production tsc -p \"tsconfig.json\"",
     "format": "prettier --list-different \"src/**/*.{js,jsx,ts,tsx}\"",
     "validate": "tsc --noEmit",
     "lint": "tslint -p \"tsconfig.json\" -t stylish \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
+    "@types/mqtt": "2.5.0",
+    "@types/node-hue-api": "2.3.0",
+    "dotenv": "8.0.0",
+    "dotenv-expand": "5.1.0",
     "inversify": "5.0.1",
+    "mqtt": "2.18.8",
+    "node-hue-api": "2.4.5",
     "reflect-metadata": "0.1.13"
   },
   "devDependencies": {
@@ -21,7 +27,7 @@
     "husky": "2.3.0",
     "nodemon": "1.19.0",
     "prettier": "1.17.1",
-    "ts-node": "8.1.0",
+    "ts-node": "8.1.1",
     "tslint": "5.16.0",
     "tslint-config-prettier": "1.18.0",
     "tslint-config-standard": "8.0.1",

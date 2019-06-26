@@ -97,7 +97,7 @@ class Lights implements ILights {
 
   private reset = async () => {
     await this.update()
-    console.log(this.lights)
+
     await Promise.all(
       this.lights.map(async light => {
         if (light.on) {

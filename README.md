@@ -1,5 +1,7 @@
 # Home Automation Server
 
+A typescript + dependency injected nodejs app for running a home automation server.
+
 ## Table of Contents
 
 - [Getting started](#getting-started-with-your-new-project)
@@ -26,7 +28,7 @@
 
 ## Code Hygiene
 
-To keep the code hygiene of everyone involved with a project in line, we've added testing, linting and formatting libraries to this to the project. These are made required by precommit hook.
+To keep the code hygiene of everyone involved with a project in line, I've added linting and formatting libraries to this to the project. These are enforced by a precommit hook.
 
 ### Validation
 
@@ -37,8 +39,7 @@ Commands:
 
 ### TSLint
 
-We use [TSLint](https://palantir.github.io/tslint/) checks your typescript for linting errors.
-In our Typescript projects we enfore some coding rules. These should help with keeping the projects in a similar code style so any developer can work with the project.
+I use [TSLint](https://palantir.github.io/tslint/) to check typescript for linting errors.
 The rules can be changed in `tslint.json`
 
 Commands:
@@ -55,4 +56,4 @@ Commands:
 
 ### Husky
 
-We use [Husky](https://github.com/typicode/husky#readme) for automating test during the commit and push processes.
+I use [Husky](https://github.com/typicode/husky#readme) for automating commands during the commit and push processes.

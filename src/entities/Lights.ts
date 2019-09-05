@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify'
-import { HueApi, nupnpSearch } from 'node-hue-api'
+import { HueApi, nupnpSearch, lightState } from 'node-hue-api'
 
 import { IConfig, ILights, ILogger } from '../constants/interfaces'
 import { TYPES, ILight } from '../constants/types'
@@ -10,6 +10,7 @@ class Lights implements ILights {
   private _logger: ILogger
   private api: HueApi
   private lights: ILight[] = []
+  private lightState: lightState.State
 
   public constructor(
     @inject(TYPES.Config) config: IConfig,
@@ -19,6 +20,9 @@ class Lights implements ILights {
     this._logger = logger.create('Lights')
 
     this.api = new HueApi(this._config.host, this._config.user)
+
+    this.lightState = lightState.create(this._config.initialState)
+
     // tslint:disable-next-line:no-floating-promises
     this.connect()
   }
@@ -37,15 +41,9 @@ class Lights implements ILights {
     const light = this.lights.find(l => l.name === name)
     if (light) {
       if (light.on) {
-        await this.api.setLightState(light.id, {
-          ...this._config.initialState,
-          on: false
-        })
+        await this.api.setLightState(light.id, this.lightState.off())
       } else {
-        await this.api.setLightState(light.id, {
-          ...this._config.initialState,
-          on: true
-        })
+        await this.api.setLightState(light.id, this.lightState.on())
       }
       this._logger.info('toggled light', name)
     } else {
@@ -60,7 +58,7 @@ class Lights implements ILights {
     } catch (err) {
       this._logger.error('Error connecting to Hue Bridge')
       this._logger.log(
-        'please set up a user and add the data to the .env.loval'
+        'please set up a user and add the data to the .env.local'
       )
       this._logger.log(
         `check out: https://developers.meethue.com/documentation/getting-started`
@@ -97,7 +95,6 @@ class Lights implements ILights {
 
   private reset = async () => {
     await this.update()
-    console.log(this.lights)
     await Promise.all(
       this.lights.map(async light => {
         if (light.on) {

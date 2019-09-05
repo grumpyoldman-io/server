@@ -45,7 +45,7 @@ class Lights implements ILights {
       } else {
         await this.api.setLightState(light.id, this.lightState.on())
       }
-      this._logger.info('toggled light', name)
+      this._logger.log('toggled light', name)
     } else {
       this._logger.error('Error toggling light', name)
     }

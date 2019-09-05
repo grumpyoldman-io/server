@@ -1,8 +1,7 @@
-export interface IMessage {
-  topic: string
-  payload?: unknown
+export interface IRequest {
+  url: string
 }
-export type IMessageSubscriber = (message: IMessage) => void
+export type IRequestSubscriber = (request: IRequest) => void
 
 export interface ILight {
   id: string
@@ -14,7 +13,7 @@ export interface ILight {
 export const TYPES = {
   Config: Symbol.for('Config'),
   Logger: Symbol.for('Logger'),
-  ServerMessages: Symbol.for('ServerMessages'),
+  Api: Symbol.for('Api'),
   Lights: Symbol.for('Lights'),
   Buttons: Symbol.for('Buttons')
 }

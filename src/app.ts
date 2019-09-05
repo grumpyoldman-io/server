@@ -1,28 +1,28 @@
 import container from './container'
 
 import { TYPES } from './constants/types'
-import { IServerMessages, IConfig, ILights } from './constants/interfaces'
+import { IApi, ILights, IConfig } from './constants/interfaces'
 
 process.stdin.resume()
 
 const config = container.get<IConfig>(TYPES.Config)
 const lights = container.get<ILights>(TYPES.Lights)
-const serverMessages = container.get<IServerMessages>(TYPES.ServerMessages)
+const api = container.get<IApi>(TYPES.Api)
 
-// On server message
-serverMessages.on(message => {
-  // is button topic? then toggle
-  if (config.buttons[message.topic]) {
-    // tslint:disable-next-line:no-floating-promises
-    lights.toggle(config.buttons[message.topic])
-  }
+// On server request
+api.on(request => {
+  Object.keys(config.switches).forEach(async switchId => {
+    if (request.url === `/switch/${switchId}/toggle`) {
+      await lights.toggle(config.switches[switchId])
+    }
+  })
 })
 
-serverMessages.listen()
+api.listen()
 
 const close = (error?: boolean) => {
   // Clean up processes before closing app.
-  serverMessages.close()
+  api.close()
   process.exit(error ? 1 : 0)
 }
 

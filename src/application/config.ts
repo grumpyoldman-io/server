@@ -1,29 +1,29 @@
 import { IConfig } from '../constants/interfaces'
 
-const MQTT_HOST = process.env.MQTT_HOST || ''
+const API_PORT = parseInt(process.env.API_PORT || '3000', 10)
 
 const HUE_HOST = process.env.HUE_HOST || ''
 const HUE_USER = process.env.HUE_USER || ''
 
-const BUTTON_PREFIX = '_SWITCH'
+const BUTTON_PREFIX = 'SWITCH_'
 
-const buttons = Object.keys(process.env).reduce((topics, topic) => {
-  if (topic.startsWith(BUTTON_PREFIX)) {
-    topics = {
-      ...topics,
-      [BUTTON_PREFIX.length]: process.env[topic]
-    }
-  }
-  return topics
-}, {})
+const switches = Object.keys(process.env).reduce(
+  (switchIds, envKey) =>
+    envKey.startsWith(BUTTON_PREFIX)
+      ? {
+          ...switchIds,
+          [envKey.replace(BUTTON_PREFIX, '')]: process.env[envKey]
+        }
+      : switchIds,
+  {}
+)
 
 const config: IConfig = {
   log: {
     level: 'all'
   },
-  mqtt: {
-    host: MQTT_HOST,
-    topics: Object.keys(buttons)
+  api: {
+    port: API_PORT
   },
   hue: {
     host: HUE_HOST,
@@ -36,7 +36,7 @@ const config: IConfig = {
       ct: 365
     }
   },
-  buttons
+  switches
 }
 
 export default config

@@ -1,12 +1,11 @@
-import { IMessageSubscriber, ILight } from './types'
+import { IRequestSubscriber, ILight } from './types'
 
 export interface IConfig {
   log: {
     level: 'all' | 'basic' | 'none'
   }
-  mqtt: {
-    host: string
-    topics: string[]
+  api: {
+    port: number
   }
   hue: {
     host: string
@@ -19,8 +18,8 @@ export interface IConfig {
       ct: number
     }
   }
-  buttons: {
-    [topic: string]: string
+  switches: {
+    [id: string]: string
   }
 }
 
@@ -32,10 +31,10 @@ export interface ILogger {
   error: (message?: any, ...optionalParams: any[]) => void
 }
 
-export interface IServerMessages {
+export interface IApi {
   listen(): void
-  on(subscriber: IMessageSubscriber): void
   close(): void
+  on(subscriber: IRequestSubscriber): void
 }
 
 export interface ILights {

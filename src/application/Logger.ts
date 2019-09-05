@@ -13,32 +13,37 @@ class Logger implements ILogger {
   }
 
   public create: ILogger['create'] = entity => {
-    this._prefix = `[${entity}]: `
+    this._prefix = `[${entity}]`
     return this
   }
 
   public log: ILogger['log'] = (message, ...optionalParams) => {
     if (this._config.level !== 'none') {
-      console.info(this._prefix, message, ...optionalParams)
+      console.info(this.timeStamp(), this._prefix, message, ...optionalParams)
     }
   }
 
   public info: ILogger['info'] = (message, ...optionalParams) => {
     if (this._config.level === 'all') {
-      console.info(this._prefix, message, ...optionalParams)
+      console.info(this.timeStamp(), this._prefix, message, ...optionalParams)
     }
   }
 
   public warn: ILogger['warn'] = (message, ...optionalParams) => {
     if (this._config.level !== 'none') {
-      console.warn(this._prefix, message, ...optionalParams)
+      console.warn(this.timeStamp(), this._prefix, message, ...optionalParams)
     }
   }
 
   public error: ILogger['error'] = (message, ...optionalParams) => {
     if (this._config.level !== 'none') {
-      console.error(this._prefix, message, ...optionalParams)
+      console.error(this.timeStamp(), this._prefix, message, ...optionalParams)
     }
+  }
+
+  private timeStamp = (): string => {
+    const date = new Date()
+    return `[${date.toISOString()}]`
   }
 }
 

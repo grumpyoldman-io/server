@@ -2,6 +2,8 @@ import { IConfig } from '../constants/interfaces'
 
 const API_PORT = parseInt(process.env.API_PORT || '3000', 10)
 
+const LOG_LEVEL = (process.env.LOG_LEVEL || 'basic') as IConfig['log']['level']
+
 const HUE_HOST = process.env.HUE_HOST || ''
 const HUE_USER = process.env.HUE_USER || ''
 
@@ -20,7 +22,7 @@ const switches = Object.keys(process.env).reduce(
 
 const config: IConfig = {
   log: {
-    level: 'all'
+    level: LOG_LEVEL
   },
   api: {
     port: API_PORT

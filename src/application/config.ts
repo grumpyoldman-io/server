@@ -1,6 +1,6 @@
 import { IConfig } from '../constants/interfaces'
 
-const API_PORT = parseInt(process.env.API_PORT || '3000', 10)
+const SERVER_PORT = parseInt(process.env.SERVER_PORT || '3000', 10)
 
 const LOG_LEVEL = (process.env.LOG_LEVEL || 'basic') as IConfig['log']['level']
 
@@ -24,10 +24,18 @@ const config: IConfig = {
   log: {
     level: LOG_LEVEL
   },
-  api: {
-    port: API_PORT
+  server: {
+    name: 'HomeAutomation',
+    port: SERVER_PORT
   },
-  hue: {
+  api: {
+    routes: {
+      home: '/',
+      status: '/status',
+      switch: '/switches/:id/toggle'
+    }
+  },
+  lights: {
     host: HUE_HOST,
     user: HUE_USER,
     initialState: {

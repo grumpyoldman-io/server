@@ -6,9 +6,10 @@ import { TYPES, ILight } from '../constants/types'
 
 @injectable()
 class Lights implements ILights {
-  private _config: IConfig['hue']
+  private _config: IConfig['lights']
   private _logger: ILogger
   private api: HueApi
+  private connected: boolean = false
   private lights: ILight[] = []
   private lightState: lightState.State
 
@@ -16,8 +17,8 @@ class Lights implements ILights {
     @inject(TYPES.Config) config: IConfig,
     @inject(TYPES.Logger) logger: ILogger
   ) {
-    this._config = config.hue
-    this._logger = logger.create('Lights')
+    this._config = config.lights
+    this._logger = logger.create('Lights', 'magenta')
 
     this.api = new HueApi(this._config.host, this._config.user)
 
@@ -37,6 +38,11 @@ class Lights implements ILights {
   }
 
   public toggle: ILights['toggle'] = async name => {
+    if (!this.connected) {
+      this._logger.error('Error toggling light', name)
+      throw new Error(`Error toggling light: ${name}`)
+    }
+
     await this.update()
     const light = this.lights.find(l => l.name === name)
     if (light) {
@@ -48,33 +54,48 @@ class Lights implements ILights {
       this._logger.log('toggled light', name)
     } else {
       this._logger.error('Error toggling light', name)
+      throw new Error(`Error toggling light: ${name}`)
     }
   }
 
   private connect = async () => {
     try {
       await this.api.config()
-      await this.reset()
+      this.connected = true
     } catch (err) {
       this._logger.error('Error connecting to Hue Bridge')
-      this._logger.log(
-        'please set up a user and add the data to the .env.local'
-      )
-      this._logger.log(
-        `check out: https://developers.meethue.com/documentation/getting-started`
-      )
+    }
 
-      await this.discover()
+    if (this.connected) {
+      await this.reset()
+    } else {
+      try {
+        await this.discover()
+      } catch (err) {
+        throw new Error(`Unable to connect to a Hue Bridge`)
+      }
     }
   }
 
   private discover = async () => {
     try {
       const bridges = await nupnpSearch()
-      this._logger.log('Hue Bridges Found:')
-      this._logger.log(JSON.stringify(bridges))
+
+      if (bridges.length) {
+        this._logger.log('Hue Bridges Found:')
+        this._logger.log(JSON.stringify(bridges))
+        this._logger.log(
+          'please set up a user and add the data to the .env.local'
+        )
+        this._logger.log(
+          `check out: https://developers.meethue.com/documentation/getting-started`
+        )
+      } else {
+        this._logger.error(`No Hue Bridges found on this network`)
+      }
     } catch (err) {
-      this._logger.error(`Error discovering bridges`, err)
+      this._logger.error(`Error discovering Hue Bridges`, err.message)
+      throw new Error(`Could not discover any Hue Bridges`)
     }
   }
 

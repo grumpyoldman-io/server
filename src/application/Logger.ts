@@ -1,4 +1,5 @@
 import { injectable, inject } from 'inversify'
+import kleur from 'kleur'
 
 import { IConfig, ILogger } from '../constants/interfaces'
 import { TYPES } from '../constants/types'
@@ -12,38 +13,83 @@ class Logger implements ILogger {
     this._config = config.log
   }
 
-  public create: ILogger['create'] = entity => {
-    this._prefix = `[${entity}]`
+  public create: ILogger['create'] = (entity, color = 'cyan') => {
+    this._prefix = kleur[color](`[${entity}]`)
     return this
   }
 
   public log: ILogger['log'] = (message, ...optionalParams) => {
+    let output = () =>
+      console.info(
+        this.timeStamp(),
+        this._prefix,
+        kleur.grey(message),
+        ...optionalParams
+      )
     if (this._config.level !== 'none') {
-      console.info(this.timeStamp(), this._prefix, message, ...optionalParams)
+      output()
+      output = () => null
     }
+
+    return this.returnForce(output)
   }
 
   public info: ILogger['info'] = (message, ...optionalParams) => {
+    let output = () =>
+      console.info(
+        this.timeStamp(),
+        this._prefix,
+        kleur.white(message),
+        ...optionalParams
+      )
+
     if (this._config.level === 'all') {
-      console.info(this.timeStamp(), this._prefix, message, ...optionalParams)
+      output()
+      output = () => null
     }
+
+    return this.returnForce(output)
   }
 
   public warn: ILogger['warn'] = (message, ...optionalParams) => {
+    let output = () =>
+      console.warn(
+        this.timeStamp(),
+        this._prefix,
+        kleur.yellow(message),
+        ...optionalParams
+      )
+
     if (this._config.level !== 'none') {
-      console.warn(this.timeStamp(), this._prefix, message, ...optionalParams)
+      output()
+      output = () => null
     }
+
+    return this.returnForce(output)
   }
 
   public error: ILogger['error'] = (message, ...optionalParams) => {
+    let output = () =>
+      console.error(
+        this.timeStamp(),
+        this._prefix,
+        kleur.red(message),
+        ...optionalParams
+      )
+
     if (this._config.level !== 'none') {
-      console.error(this.timeStamp(), this._prefix, message, ...optionalParams)
+      output()
+      output = () => null
     }
+
+    return this.returnForce(output)
   }
+
+  private returnForce = (output: () => void) => ({ force: output })
 
   private timeStamp = (): string => {
     const date = new Date()
-    return `[${date.toISOString()}]`
+    return kleur.grey(`[${date.toISOString()}]`)
   }
 }
 

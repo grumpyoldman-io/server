@@ -16,8 +16,7 @@
     "baseUrl": ".",
     "lib": ["es6"],
     "typeRoots": ["./node_modules/@types"],
-    "types": ["reflect-metadata", "node"],
-    "outDir": "build"
+    "types": ["reflect-metadata", "node"]
   },
   "exclude": ["build", "node_modules"]
 }

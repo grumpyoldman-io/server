@@ -1,0 +1,12 @@
+{
+  "verbose": true,
+  "ignore": ["*.spec.(ts|tsx)"],
+  "execMap": {
+    "ts": "ts-node",
+    "tsx": "ts-node"
+  },
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "ext": "js,jsx,json,ts,tsx"
+}

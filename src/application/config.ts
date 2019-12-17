@@ -1,5 +1,10 @@
 import { IConfig } from '../constants/interfaces'
 
+const ENV =
+  (process.env.NODE_ENV as IConfig['app']['environment']) || 'production'
+const VERSION = process.env.VERSION || 'n.a.'
+const COMMIT_HASH = process.env.COMMIT_HASH || 'n.a.'
+
 const SERVER_PORT = parseInt(process.env.SERVER_PORT || '3000', 10)
 
 const LOG_LEVEL = (process.env.LOG_LEVEL || 'basic') as IConfig['log']['level']
@@ -21,6 +26,11 @@ const switches = Object.keys(process.env).reduce(
 )
 
 const config: IConfig = {
+  app: {
+    environment: ENV,
+    version: VERSION,
+    commitHash: COMMIT_HASH
+  },
   log: {
     level: LOG_LEVEL
   },

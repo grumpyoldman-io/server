@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { execSync } from 'child_process'
 import paths from './paths'
 
 // Make sure that including paths.js after env.js will read .env variables.
@@ -38,3 +39,13 @@ process.env.NODE_PATH = (process.env.NODE_PATH || '')
   .filter(folder => folder && !path.isAbsolute(folder))
   .map(folder => path.resolve(paths.appDirectory, folder))
   .join(path.delimiter)
+
+try {
+  process.env.COMMIT_HASH = execSync('git rev-parse HEAD')
+    .toString()
+    .trim()
+
+  process.env.VERSION = process.env.npm_package_version
+} catch {
+  // these optional ENV vars should be handled by the application
+}

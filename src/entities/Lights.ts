@@ -6,6 +6,7 @@ import { TYPES, ILight } from '../constants/types'
 
 @injectable()
 class Lights implements ILights {
+  private _appConfig: IConfig['app']
   private _config: IConfig['lights']
   private _logger: ILogger
   private api: HueApi
@@ -17,6 +18,7 @@ class Lights implements ILights {
     @inject(TYPES.Config) config: IConfig,
     @inject(TYPES.Logger) logger: ILogger
   ) {
+    this._appConfig = config.app
     this._config = config.lights
     this._logger = logger.create('Lights', 'magenta')
 
@@ -67,7 +69,9 @@ class Lights implements ILights {
     }
 
     if (this.connected) {
-      await this.reset()
+      if (this._appConfig.environment !== 'development') {
+        await this.reset()
+      }
     } else {
       try {
         await this.discover()

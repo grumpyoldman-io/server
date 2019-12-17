@@ -2,6 +2,11 @@ import { IRouteHandler, ILight } from './types'
 import kleur from 'kleur'
 
 export interface IConfig {
+  app: {
+    environment: 'development' | 'test' | 'production'
+    version: string
+    commitHash: string
+  }
   log: {
     level: 'all' | 'basic' | 'none'
   }

@@ -1,17 +1,34 @@
 import container from './container'
 
 import { TYPES } from './constants/types'
-import { IServer, ILogger, IApi } from './constants/interfaces'
+import { IServer, ILogger, IApi, IConfig } from './constants/interfaces'
 
 process.stdin.resume()
 
+const config = container.get<IConfig>(TYPES.Config)
 const logger = container
   .get<ILogger>(TYPES.Logger)
   .create('Application', 'green')
 const server = container.get<IServer>(TYPES.Server)
 const router = container.get<IApi>(TYPES.Api)
 
-logger.info(`Starting app in ${process.env.NODE_ENV} mode`)
+logger
+  .log(
+    `
+
+    .    |    ,
+     \\ _..._ /
+ -_  .'     '. _-    Home Automation Server
+    /         \\
+ __ |         | __   vsn: ${config.app.version}
+     \\  \\~/  /       cmh: ${config.app.commitHash}
+    / \`\\ Y /\` \\      env: ${config.app.environment}
+   '   |_|_|   '
+       {___}
+        "*"
+`
+  )
+  .force()
 
 router.attach(server).listen()
 

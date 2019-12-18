@@ -33,6 +33,16 @@ class Admin implements IAdmin {
         respond({ error: `Error getting status`, details: err.message }, 500)
       }
     }
+
+    this.routes.get[this._config.routes.update] = async respond => {
+      try {
+        await this._git.update()
+
+        respond({ message: 'done' }, 200)
+      } catch (err) {
+        respond({ error: `Error updating`, details: err.message }, 500)
+      }
+    }
   }
 }
 

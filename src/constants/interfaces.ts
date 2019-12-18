@@ -17,6 +17,7 @@ export interface IConfig {
   admin: {
     routes: {
       status: string
+      update: string
     }
   }
   api: {
@@ -62,6 +63,7 @@ export type IApi = IWebInterface
 
 export interface IGit {
   status(): Promise<string>
+  update(): Promise<void>
 }
 
 export interface IServer {

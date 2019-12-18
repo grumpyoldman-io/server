@@ -38,18 +38,16 @@ export interface IConfig {
   }
 }
 
-interface IForce {
-  force: () => void
-}
 export interface ILogger {
-  create: (
-    entity: string,
+  setPrefix: (
+    prefix: string,
     color?: Exclude<keyof kleur.Kleur, 'white' | 'grey' | 'yellow' | 'red'>
   ) => ILogger
-  log: (message?: any, ...optionalParams: any[]) => IForce
-  info: (message?: any, ...optionalParams: any[]) => IForce
-  warn: (message?: any, ...optionalParams: any[]) => IForce
-  error: (message?: any, ...optionalParams: any[]) => IForce
+  log: (message?: any, ...optionalParams: any[]) => ILogger
+  info: (message?: any, ...optionalParams: any[]) => ILogger
+  warn: (message?: any, ...optionalParams: any[]) => ILogger
+  error: (message?: any, ...optionalParams: any[]) => ILogger
+  force: () => ILogger
 }
 
 export interface IServer {

@@ -54,6 +54,48 @@ class Git implements IGit {
     return 'N.A.'
   }
 
+  public update: IGit['update'] = async () => {
+    try {
+      await this.pull()
+    } catch (error) {
+      const message = 'Unable to pull in new changes'
+      if (this._config.environment === 'development') {
+        this._logger.error(message)
+        this._logger.error(`\n${error.message}`)
+      }
+      throw new Error(message)
+    }
+
+    let commitHash = this._config.commitHash
+    try {
+      commitHash = await this.revParse()
+    } catch (error) {
+      const message = 'Unable to get new commit hash'
+      if (this._config.environment === 'development') {
+        this._logger.error(message)
+        this._logger.error(`\n${error.message}`)
+      }
+    }
+
+    if (commitHash !== this._config.commitHash) {
+      this._logger.info('New version available, starting build')
+
+      try {
+        const buildLog = await this.build()
+        if (this._config.environment === 'development') {
+          this._logger.log(`\n${buildLog}\n`)
+        }
+      } catch (error) {
+        const message = 'Unable to build new version'
+        if (this._config.environment === 'development') {
+          this._logger.error(message)
+          this._logger.error(`\n${error.message}\n`)
+        }
+        throw new Error(message)
+      }
+    }
+  }
+
   private fetch = async () =>
     new Promise<void>((resolve, reject) => {
       exec('git fetch', error => {
@@ -81,6 +123,36 @@ class Git implements IGit {
             .split('\n')
             .map(entry => entry.slice(7, -5))
         )
+      })
+    })
+
+  private pull = async () =>
+    new Promise<string>((resolve, reject) => {
+      exec('git pull --rebase', (error, stdout) => {
+        if (error) {
+          return reject(error)
+        }
+        return resolve(stdout.toString().trim())
+      })
+    })
+
+  private revParse = async () =>
+    new Promise<string>((resolve, reject) => {
+      exec('git rev-parse HEAD', (error, stdout) => {
+        if (error) {
+          return reject(error)
+        }
+        return resolve(stdout.toString().trim())
+      })
+    })
+
+  private build = async () =>
+    new Promise<string>((resolve, reject) => {
+      exec('npm run build', (error, stdout) => {
+        if (error) {
+          return reject(error)
+        }
+        return resolve(stdout.toString().trim())
       })
     })
 }

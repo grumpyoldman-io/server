@@ -40,7 +40,8 @@ const config: IConfig = {
   },
   admin: {
     routes: {
-      status: '/status'
+      status: '/status',
+      update: '/update'
     }
   },
   api: {

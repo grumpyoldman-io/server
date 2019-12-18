@@ -13,8 +13,9 @@ import {
 
 import config from './application/config'
 import Logger from './application/Logger'
-import Admin from './application/Admin'
-import Api from './application/Api'
+
+import Admin from './interfaces/Admin'
+import Api from './interfaces/Api'
 
 import Git from './entities/Git'
 import Server from './entities/Server'

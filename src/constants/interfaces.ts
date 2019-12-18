@@ -1,6 +1,7 @@
 import { ILight, IRoutes } from './types'
 import kleur from 'kleur'
 
+// Application
 export interface IConfig {
   app: {
     environment: 'development' | 'test' | 'production'
@@ -55,12 +56,14 @@ export interface ILogger {
   force: () => ILogger
 }
 
+// Interfaces
 interface IWebInterface {
   routes: IRoutes
 }
 export type IAdmin = IWebInterface
 export type IApi = IWebInterface
 
+// Entities
 export interface IGit {
   status(): Promise<string>
   update(): Promise<void>

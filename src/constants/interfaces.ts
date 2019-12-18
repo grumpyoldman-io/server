@@ -1,5 +1,4 @@
-import { ILight, IRoutes } from './types'
-import kleur from 'kleur'
+import { Kleur } from 'kleur'
 
 // Application
 export interface IConfig {
@@ -47,7 +46,7 @@ export interface IConfig {
 export interface ILogger {
   setPrefix: (
     prefix: string,
-    color?: Exclude<keyof kleur.Kleur, 'white' | 'grey' | 'yellow' | 'red'>
+    color?: Exclude<keyof Kleur, 'white' | 'grey' | 'yellow' | 'red'>
   ) => ILogger
   log: (message?: any, ...optionalParams: any[]) => ILogger
   info: (message?: any, ...optionalParams: any[]) => ILogger
@@ -57,11 +56,21 @@ export interface ILogger {
 }
 
 // Interfaces
-interface IWebInterface {
+export interface IRoutes {
+  [method: string]: {
+    [path: string]: (
+      callback: (data: object, statusCode: number | 200) => void
+    ) => void
+  }
+}
+
+export interface IAdmin {
   routes: IRoutes
 }
-export type IAdmin = IWebInterface
-export type IApi = IWebInterface
+
+export interface IApi {
+  routes: IRoutes
+}
 
 // Entities
 export interface IGit {
@@ -74,6 +83,13 @@ export interface IServer {
   addRoutes(routes: IRoutes): IServer
   listen(): IServer
   close(): IServer
+}
+
+export interface ILight {
+  id: string
+  name: string
+  on: boolean
+  toggle: () => Promise<void>
 }
 
 export interface ILights {

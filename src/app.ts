@@ -1,7 +1,7 @@
 import container from './container'
 
-import { TYPES } from './constants/types'
 import { IServer, ILogger, IAdmin, IApi, IConfig } from './constants/interfaces'
+import { TYPES } from './constants/types'
 
 process.stdin.resume()
 

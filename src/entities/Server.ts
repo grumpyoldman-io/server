@@ -1,8 +1,8 @@
 import { createServer, Server as HttpServer, RequestListener } from 'http'
 import { injectable, inject } from 'inversify'
 
-import { IServer, IConfig, ILogger } from '../constants/interfaces'
-import { TYPES, IRoutes } from '../constants/types'
+import { IServer, IConfig, ILogger, IRoutes } from '../constants/interfaces'
+import { TYPES } from '../constants/types'
 
 @injectable()
 class Server implements IServer {

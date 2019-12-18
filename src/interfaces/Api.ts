@@ -1,13 +1,12 @@
 import { injectable, inject } from 'inversify'
 
-import { IApi, IConfig, ILights } from '../constants/interfaces'
-import { TYPES, IRoutes } from '../constants/types'
+import { IApi, IConfig, ILights, IRoutes } from '../constants/interfaces'
+import { TYPES } from '../constants/types'
 
 @injectable()
 class Api implements IApi {
   public routes: IRoutes = {
-    get: {},
-    post: {}
+    get: {}
   }
 
   private _config: IConfig['api']

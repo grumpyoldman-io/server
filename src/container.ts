@@ -1,6 +1,5 @@
 import { Container } from 'inversify'
 
-import { TYPES } from './constants/types'
 import {
   IConfig,
   ILogger,
@@ -10,6 +9,7 @@ import {
   IServer,
   ILights
 } from './constants/interfaces'
+import { TYPES } from './constants/types'
 
 import config from './application/config'
 import Logger from './application/Logger'

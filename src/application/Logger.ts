@@ -7,89 +7,109 @@ import { TYPES } from '../constants/types'
 @injectable()
 class Logger implements ILogger {
   private _config: IConfig['log']
-  private _prefix: string = ''
+
+  private prefix: string
+  private output: () => void
 
   public constructor(@inject(TYPES.Config) config: IConfig) {
     this._config = config.log
+    this.prefix = ''
+    this.output = () => null
   }
 
-  public create: ILogger['create'] = (entity, color = 'cyan') => {
-    this._prefix = kleur[color](`[${entity}]`)
+  public setPrefix: ILogger['setPrefix'] = (prefix, color) => {
+    this.prefix = kleur[color ? color : 'white'](`[${prefix}]`)
     return this
   }
 
   public log: ILogger['log'] = (message, ...optionalParams) => {
-    let output = () =>
+    this.output = () =>
       console.info(
         this.timeStamp(),
-        this._prefix,
-        kleur.grey(message),
+        this.prefix,
+        kleur.grey(this.formatMessage(message)),
         ...optionalParams
       )
     if (this._config.level !== 'none') {
-      output()
-      output = () => null
+      this.output()
+      this.resetOutput()
     }
 
-    return this.returnForce(output)
+    return this
   }
 
   public info: ILogger['info'] = (message, ...optionalParams) => {
-    let output = () =>
+    this.output = () =>
       console.info(
         this.timeStamp(),
-        this._prefix,
-        kleur.white(message),
+        this.prefix,
+        kleur.white(this.formatMessage(message)),
         ...optionalParams
       )
 
     if (this._config.level === 'all') {
-      output()
-      output = () => null
+      this.output()
+      this.resetOutput()
     }
 
-    return this.returnForce(output)
+    return this
   }
 
   public warn: ILogger['warn'] = (message, ...optionalParams) => {
-    let output = () =>
+    this.output = () =>
       console.warn(
         this.timeStamp(),
-        this._prefix,
-        kleur.yellow(message),
+        this.prefix,
+        kleur.yellow(this.formatMessage(message)),
         ...optionalParams
       )
 
     if (this._config.level !== 'none') {
-      output()
-      output = () => null
+      this.output()
+      this.resetOutput()
     }
 
-    return this.returnForce(output)
+    return this
   }
 
   public error: ILogger['error'] = (message, ...optionalParams) => {
-    let output = () =>
+    this.output = () =>
       console.error(
         this.timeStamp(),
-        this._prefix,
-        kleur.red(message),
+        this.prefix,
+        kleur.red(this.formatMessage(message)),
         ...optionalParams
       )
 
     if (this._config.level !== 'none') {
-      output()
-      output = () => null
+      this.output()
+      this.resetOutput()
     }
 
-    return this.returnForce(output)
+    return this
   }
 
-  private returnForce = (output: () => void) => ({ force: output })
+  public force: ILogger['force'] = () => {
+    this.output()
+    this.resetOutput()
+
+    return this
+  }
 
   private timeStamp = (): string => {
     const date = new Date()
     return kleur.grey(`[${date.toISOString()}]`)
+  }
+
+  private formatMessage = (message: any) => {
+    if (typeof message === 'object') {
+      return JSON.stringify(message, null, 2)
+    }
+    return message
+  }
+
+  private resetOutput = () => {
+    this.output = () => null
   }
 }
 

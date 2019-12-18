@@ -25,7 +25,7 @@ class Server implements IServer {
   ) {
     this.server = createServer(this.handleRequest)
     this._config = config.server
-    this._logger = logger.create('Server', 'blue')
+    this._logger = logger.setPrefix('Server', 'blue')
 
     this.name = this._config.name
   }

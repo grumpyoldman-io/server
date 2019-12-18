@@ -20,7 +20,7 @@ class Lights implements ILights {
   ) {
     this._appConfig = config.app
     this._config = config.lights
-    this._logger = logger.create('Lights', 'magenta')
+    this._logger = logger.setPrefix('Lights', 'magenta')
 
     this.api = new HueApi(this._config.host, this._config.user)
 

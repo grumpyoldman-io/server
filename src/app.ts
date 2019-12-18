@@ -8,7 +8,7 @@ process.stdin.resume()
 const config = container.get<IConfig>(TYPES.Config)
 const logger = container
   .get<ILogger>(TYPES.Logger)
-  .create('Application', 'green')
+  .setPrefix('Application', 'green')
 const server = container.get<IServer>(TYPES.Server)
 const router = container.get<IApi>(TYPES.Api)
 

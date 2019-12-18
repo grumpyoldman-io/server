@@ -21,7 +21,7 @@ class Api implements IApi {
     @inject(TYPES.Logger) logger: ILogger
   ) {
     this._config = config
-    this._logger = logger.create('Api')
+    this._logger = logger.setPrefix('Api')
     this._lights = lights
   }
 

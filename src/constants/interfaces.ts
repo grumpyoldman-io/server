@@ -14,6 +14,11 @@ export interface IConfig {
     name: string
     port: number
   }
+  admin: {
+    routes: {
+      status: string
+    }
+  }
   api: {
     routes: {
       lights: string
@@ -49,17 +54,22 @@ export interface ILogger {
   force: () => ILogger
 }
 
+interface IWebInterface {
+  routes: IRoutes
+}
+export type IAdmin = IWebInterface
+export type IApi = IWebInterface
+
+export interface IGit {
+  status(): Promise<string>
+}
+
 export interface IServer {
   name: IConfig['server']['name']
   addRoutes(routes: IRoutes): IServer
   listen(): IServer
   close(): IServer
 }
-
-interface IWebInterface {
-  routes: IRoutes
-}
-export type IApi = IWebInterface
 
 export interface ILights {
   list(): Promise<ILight[]>

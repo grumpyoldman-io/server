@@ -1,7 +1,7 @@
 import container from './container'
 
 import { TYPES } from './constants/types'
-import { IServer, ILogger, IApi, IConfig } from './constants/interfaces'
+import { IServer, ILogger, IAdmin, IApi, IConfig } from './constants/interfaces'
 
 process.stdin.resume()
 
@@ -10,6 +10,7 @@ const logger = container
   .get<ILogger>(TYPES.Logger)
   .setPrefix('Application', 'green')
 const server = container.get<IServer>(TYPES.Server)
+const admin = container.get<IAdmin>(TYPES.Admin)
 const api = container.get<IApi>(TYPES.Api)
 
 logger
@@ -30,7 +31,10 @@ logger
   )
   .force()
 
-server.addRoutes(api.routes).listen()
+server
+  .addRoutes(admin.routes)
+  .addRoutes(api.routes)
+  .listen()
 
 const close = (err?: Error) => {
   if (err) {

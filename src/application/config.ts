@@ -38,6 +38,11 @@ const config: IConfig = {
     name: 'HomeAutomation',
     port: SERVER_PORT
   },
+  admin: {
+    routes: {
+      status: '/status'
+    }
+  },
   api: {
     routes: {
       lights: '/lights',

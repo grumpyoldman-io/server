@@ -6,7 +6,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/node:lts
+      - image: circleci/node:8.16.1
 
     working_directory: ~/repo
 
@@ -28,4 +28,4 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       # run tests!
-      - run: yarn lint && yarn validate
+      - run: yarn format && yarn lint && yarn validate

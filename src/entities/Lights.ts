@@ -6,9 +6,10 @@ import { TYPES, ILight } from '../constants/types'
 
 @injectable()
 class Lights implements ILights {
-  private _appConfig: IConfig['app']
   private _config: IConfig['lights']
+  private _appConfig: IConfig['app']
   private _logger: ILogger
+
   private api: HueApi
   private connected: boolean = false
   private lights: ILight[] = []
@@ -18,8 +19,8 @@ class Lights implements ILights {
     @inject(TYPES.Config) config: IConfig,
     @inject(TYPES.Logger) logger: ILogger
   ) {
-    this._appConfig = config.app
     this._config = config.lights
+    this._appConfig = config.app
     this._logger = logger.setPrefix('Lights', 'magenta')
 
     this.api = new HueApi(this._config.host, this._config.user)

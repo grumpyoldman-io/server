@@ -1,4 +1,4 @@
-import { IRouteHandler, ILight } from './types'
+import { ILight, IRoutes } from './types'
 import kleur from 'kleur'
 
 export interface IConfig {
@@ -16,10 +16,9 @@ export interface IConfig {
   }
   api: {
     routes: {
-      home: string
-      status: string
+      lights: string
       switch: string
-      [key: string]: string
+      switches: string
     }
   }
   lights: {
@@ -52,15 +51,15 @@ export interface ILogger {
 
 export interface IServer {
   name: IConfig['server']['name']
-  listen(): void
-  close(): void
-  get(path: string, handler: IRouteHandler): void
-  post(path: string, handler: IRouteHandler): void
+  addRoutes(routes: IRoutes): IServer
+  listen(): IServer
+  close(): IServer
 }
 
-export interface IApi {
-  attach(server: IServer): IServer
+interface IWebInterface {
+  routes: IRoutes
 }
+export type IApi = IWebInterface
 
 export interface ILights {
   list(): Promise<ILight[]>

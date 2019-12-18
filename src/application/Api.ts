@@ -1,63 +1,71 @@
 import { injectable, inject } from 'inversify'
 
-import {
-  IApi,
-  IConfig,
-  ILogger,
-  ILights,
-  IServer
-} from '../constants/interfaces'
-import { TYPES } from '../constants/types'
+import { IApi, IConfig, ILights } from '../constants/interfaces'
+import { TYPES, IRoutes } from '../constants/types'
 
 @injectable()
 class Api implements IApi {
-  private _config: IConfig
-  private _logger: ILogger
+  public routes: IRoutes = {
+    get: {},
+    post: {}
+  }
+
+  private _config: IConfig['api']
+  private _switchConfig: IConfig['switches']
   private _lights: ILights
 
   public constructor(
     @inject(TYPES.Config) config: IConfig,
-    @inject(TYPES.Lights) lights: ILights,
-    @inject(TYPES.Logger) logger: ILogger
+    @inject(TYPES.Lights) lights: ILights
   ) {
-    this._config = config
-    this._logger = logger.setPrefix('Api')
+    this._config = config.api
+    this._switchConfig = config.switches
     this._lights = lights
+
+    this.setRoutes()
   }
 
-  public attach = (server: IServer) => {
-    Object.keys(this._config.switches).forEach(switchId => {
-      server.get(
-        this.createRouteWithParams(this._config.api.routes.switch, {
+  private setRoutes = () => {
+    Object.keys(this._switchConfig).forEach(switchId => {
+      this.routes.get[
+        this.createRouteWithParams(this._config.routes.switch, {
           id: switchId
-        }),
-        async respond => {
-          try {
-            await this._lights.toggle(this._config.switches[switchId])
-            respond({ message: `${switchId} toggled` }, 200)
-          } catch (err) {
-            respond(
-              { error: `Error toggling ${switchId}`, details: err.message },
-              500
-            )
-          }
+        })
+      ] = async respond => {
+        try {
+          await this._lights.toggle(this._switchConfig[switchId])
+          respond({ message: `${switchId} toggled` }, 200)
+        } catch (err) {
+          respond(
+            { error: `Error toggling ${switchId}`, details: err.message },
+            500
+          )
         }
-      )
+      }
     })
 
-    server.get('/status', async respond => {
+    this.routes.get[this._config.routes.lights] = async respond => {
       try {
         const lightList = (await this._lights.list()).map(({ name, on }) => ({
           id: name,
           on
         }))
-        const switchesList = Object.keys(this._config.switches).reduce(
+
+        respond(lightList, 200)
+      } catch (err) {
+        respond({ error: `Error getting status`, details: err.message }, 500)
+      }
+    }
+
+    this.routes.get[this._config.routes.switches] = async respond => {
+      try {
+        const switchesList = Object.keys(this._switchConfig).reduce(
           (switches, id) => [
             ...switches,
             {
               id,
-              name: this._config.switches[id],
-              path: this.createRouteWithParams(this._config.api.routes.switch, {
+              name: this._switchConfig[id],
+              path: this.createRouteWithParams(this._config.routes.switch, {
                 id
               })
             }
@@ -65,15 +73,11 @@ class Api implements IApi {
           [] as Array<{ id: string; name: string; path: string }>
         )
 
-        respond({ lights: lightList, switches: switchesList }, 200)
+        respond(switchesList, 200)
       } catch (err) {
         respond({ error: `Error getting status`, details: err.message }, 500)
       }
-    })
-
-    this._logger.info(`Attached to ${server.name}`)
-
-    return server
+    }
   }
 
   private createRouteWithParams = (

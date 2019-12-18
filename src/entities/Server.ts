@@ -16,38 +16,49 @@ class Server implements IServer {
 
   private routes: IRoutes = {
     get: {},
-    post: {}
+    post: {},
+    delete: {}
   }
 
   public constructor(
     @inject(TYPES.Config) config: IConfig,
     @inject(TYPES.Logger) logger: ILogger
   ) {
-    this.server = createServer(this.handleRequest)
     this._config = config.server
     this._logger = logger.setPrefix('Server', 'blue')
 
+    this.server = createServer(this.handleRequest)
     this.name = this._config.name
+  }
+
+  public addRoutes = (routes: IRoutes) => {
+    Object.keys(routes).forEach(method => {
+      Object.keys(routes[method]).forEach(route => {
+        this.routes[method][route] = routes[method][route]
+      })
+    })
+
+    return this
   }
 
   public listen = () => {
     this.server.listen(this._config.port)
     this.listening = true
 
-    this._logger.info(`listening on port ${this._config.port}`).force()
+    this._logger.info(`Listening on port ${this._config.port}`).force()
+
+    return this
   }
 
   public close = () => {
     if (this.listening) {
       this.server.close()
+      this.listening = false
       this._logger.info(`stopped listening`)
     }
-  }
 
-  public get: IServer['get'] = (route, handler) =>
-    (this.routes.get[route] = handler)
-  public post: IServer['post'] = (route, handler) =>
-    (this.routes.post[route] = handler)
+    return this
+  }
 
   private handleRequest: RequestListener = (req, res) => {
     const method = (req.method && req.method.toLowerCase()) || 'get'
@@ -57,7 +68,7 @@ class Server implements IServer {
     res.setHeader('Content-Security-Policy', `default-src 'self'`)
     res.setHeader('X-Content-Type-Options', `nosniff`)
     res.setHeader('X-Frame-Options', `deny`)
-    res.setHeader('X-Powered-By', 'Buddy the guinea pig')
+    res.setHeader('X-Powered-By', 'A bunch of guinea pigs')
 
     if (method !== 'get' && method !== 'post') {
       res.statusCode = 405

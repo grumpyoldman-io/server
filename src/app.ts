@@ -10,7 +10,7 @@ const logger = container
   .get<ILogger>(TYPES.Logger)
   .setPrefix('Application', 'green')
 const server = container.get<IServer>(TYPES.Server)
-const router = container.get<IApi>(TYPES.Api)
+const api = container.get<IApi>(TYPES.Api)
 
 logger
   .log(
@@ -30,7 +30,7 @@ logger
   )
   .force()
 
-router.attach(server).listen()
+server.addRoutes(api.routes).listen()
 
 const close = (err?: Error) => {
   if (err) {

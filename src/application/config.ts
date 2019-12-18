@@ -40,8 +40,8 @@ const config: IConfig = {
   },
   api: {
     routes: {
-      home: '/',
-      status: '/status',
+      lights: '/lights',
+      switches: '/switches',
       switch: '/switches/:id/toggle'
     }
   },

@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify'
 
-import { IAdmin, IConfig, IGit } from '../constants/interfaces'
-import { TYPES, IRoutes } from '../constants/types'
+import { IAdmin, IConfig, IGit, IRoutes } from '../constants/interfaces'
+import { TYPES } from '../constants/types'
 
 @injectable()
 class Admin implements IAdmin {

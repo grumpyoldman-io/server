@@ -1,8 +1,8 @@
 import { injectable, inject } from 'inversify'
 import { HueApi, nupnpSearch, lightState } from 'node-hue-api'
 
-import { IConfig, ILights, ILogger } from '../constants/interfaces'
-import { TYPES, ILight } from '../constants/types'
+import { IConfig, ILights, ILogger, ILight } from '../constants/interfaces'
+import { TYPES } from '../constants/types'
 
 @injectable()
 class Lights implements ILights {

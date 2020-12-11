@@ -8,7 +8,7 @@ A typescript + dependency injected nodejs app for running a home automation serv
 - [Scripts](#scripts)
 - [Code Hygiene](#code-hygiene)
   - [Validation](#validation)
-  - [TSLint](#tslint)
+  - [ESLint](#eslint)
   - [Prettier](#prettier)
 - [Automation](#Automation)
   - [Husky](#husky)
@@ -37,10 +37,10 @@ Typescript has it's own validation which you can use to find any Typescript faul
 Commands:
 `yarn validate`
 
-### TSLint
+### ESLint
 
-I use [TSLint](https://palantir.github.io/tslint/) to check typescript for linting errors.
-The rules can be changed in `tslint.json`
+I use [ESLint](https://eslint.org/) to check typescript for linting errors.
+The rules can be changed in `.eslintrc.js`
 
 Commands:
 `yarn lint`

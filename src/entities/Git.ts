@@ -9,8 +9,8 @@ type Log = string[]
 
 @injectable()
 class Git implements IGit {
-  private _config: IConfig['app']
-  private _logger: ILogger
+  private readonly _config: IConfig['app']
+  private readonly _logger: ILogger
 
   public constructor(
     @inject(TYPES.Config) config: IConfig,
@@ -26,7 +26,7 @@ class Git implements IGit {
     } catch (error) {
       if (this._config.environment === 'development') {
         this._logger.error('Unable to fetch')
-        this._logger.error(`\n${error.message}`)
+        this._logger.error(`\n${(error as Error).message}`)
       }
     }
 
@@ -37,17 +37,18 @@ class Git implements IGit {
     } catch (error) {
       if (this._config.environment === 'development') {
         this._logger.error('Unable to get log')
-        this._logger.error(`\n${error.message}`)
+        this._logger.error(`\n${(error as Error).message}`)
       }
     }
 
-    if (log.length) {
+    if (log.length > 0) {
       if (this._config.commitHash === log[0]) {
         return 'Up to date'
       } else {
         const distance = log.indexOf(this._config.commitHash)
-        return `Outdated${distance !== -1 &&
-          ` by ${distance} commits`}, please update`
+        return `Outdated${
+          distance !== -1 && ` by ${distance} commits`
+        }, please update`
       }
     }
 
@@ -61,7 +62,7 @@ class Git implements IGit {
       const message = 'Unable to pull in new changes'
       if (this._config.environment === 'development') {
         this._logger.error(message)
-        this._logger.error(`\n${error.message}`)
+        this._logger.error(`\n${(error as Error).message}`)
       }
       throw new Error(message)
     }
@@ -73,7 +74,7 @@ class Git implements IGit {
       const message = 'Unable to get new commit hash'
       if (this._config.environment === 'development') {
         this._logger.error(message)
-        this._logger.error(`\n${error.message}`)
+        this._logger.error(`\n${(error as Error).message}`)
       }
     }
 
@@ -89,27 +90,27 @@ class Git implements IGit {
         const message = 'Unable to build new version'
         if (this._config.environment === 'development') {
           this._logger.error(message)
-          this._logger.error(`\n${error.message}\n`)
+          this._logger.error(`\n${(error as Error).message}\n`)
         }
         throw new Error(message)
       }
     }
   }
 
-  private fetch = async () =>
-    new Promise<void>((resolve, reject) => {
-      exec('git fetch', error => {
-        if (error) {
+  private readonly fetch = async (): Promise<void> =>
+    await new Promise((resolve, reject) => {
+      exec('git fetch', (error) => {
+        if (error !== null) {
           return reject(error)
         }
         return resolve()
       })
     })
 
-  private log = async () =>
-    new Promise<Log>((resolve, reject) => {
+  private readonly log = async (): Promise<Log> =>
+    await new Promise((resolve, reject) => {
       exec('git log --pretty="@begin@%H@end@"', (error, stdout) => {
-        if (error) {
+        if (error !== null) {
           return reject(error)
         }
         if (!stdout.includes('@begin@')) {
@@ -121,35 +122,35 @@ class Git implements IGit {
             .toString()
             .trim()
             .split('\n')
-            .map(entry => entry.slice(7, -5))
+            .map((entry) => entry.slice(7, -5))
         )
       })
     })
 
-  private pull = async () =>
-    new Promise<string>((resolve, reject) => {
+  private readonly pull = async (): Promise<string> =>
+    await new Promise((resolve, reject) => {
       exec('git pull --rebase', (error, stdout) => {
-        if (error) {
+        if (error !== null) {
           return reject(error)
         }
         return resolve(stdout.toString().trim())
       })
     })
 
-  private revParse = async () =>
-    new Promise<string>((resolve, reject) => {
+  private readonly revParse = async (): Promise<string> =>
+    await new Promise((resolve, reject) => {
       exec('git rev-parse HEAD', (error, stdout) => {
-        if (error) {
+        if (error !== null) {
           return reject(error)
         }
         return resolve(stdout.toString().trim())
       })
     })
 
-  private build = async () =>
-    new Promise<string>((resolve, reject) => {
+  private readonly build = async (): Promise<string> =>
+    await new Promise<string>((resolve, reject) => {
       exec('npm run build', (error, stdout) => {
-        if (error) {
+        if (error !== null) {
           return reject(error)
         }
         return resolve(stdout.toString().trim())

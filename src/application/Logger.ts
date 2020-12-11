@@ -6,7 +6,7 @@ import { TYPES } from '../constants/types'
 
 @injectable()
 class Logger implements ILogger {
-  private _config: IConfig['log']
+  private readonly _config: IConfig['log']
 
   private prefix: string
   private output: () => void
@@ -18,12 +18,13 @@ class Logger implements ILogger {
   }
 
   public setPrefix: ILogger['setPrefix'] = (prefix, color) => {
-    this.prefix = kleur[color ? color : 'white'](`[${prefix}]`)
+    this.prefix = kleur[color ?? 'white'](`[${prefix}]`)
     return this
   }
 
   public log: ILogger['log'] = (message, ...optionalParams) => {
     this.output = () =>
+      // eslint-disable-next-line no-console
       console.info(
         this.timeStamp(),
         this.prefix,
@@ -40,6 +41,7 @@ class Logger implements ILogger {
 
   public info: ILogger['info'] = (message, ...optionalParams) => {
     this.output = () =>
+      // eslint-disable-next-line no-console
       console.info(
         this.timeStamp(),
         this.prefix,
@@ -57,6 +59,7 @@ class Logger implements ILogger {
 
   public warn: ILogger['warn'] = (message, ...optionalParams) => {
     this.output = () =>
+      // eslint-disable-next-line no-console
       console.warn(
         this.timeStamp(),
         this.prefix,
@@ -74,6 +77,7 @@ class Logger implements ILogger {
 
   public error: ILogger['error'] = (message, ...optionalParams) => {
     this.output = () =>
+      // eslint-disable-next-line no-console
       console.error(
         this.timeStamp(),
         this.prefix,
@@ -96,19 +100,20 @@ class Logger implements ILogger {
     return this
   }
 
-  private timeStamp = (): string => {
+  private readonly timeStamp = (): string => {
     const date = new Date()
     return kleur.grey(`[${date.toISOString()}]`)
   }
 
-  private formatMessage = (message: any) => {
+  private readonly formatMessage = (message: any): string => {
     if (typeof message === 'object') {
       return JSON.stringify(message, null, 2)
     }
-    return message
+
+    return String(message)
   }
 
-  private resetOutput = () => {
+  private readonly resetOutput = (): void => {
     this.output = () => null
   }
 }

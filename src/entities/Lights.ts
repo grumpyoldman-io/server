@@ -6,14 +6,14 @@ import { TYPES } from '../constants/types'
 
 @injectable()
 class Lights implements ILights {
-  private _config: IConfig['lights']
-  private _appConfig: IConfig['app']
-  private _logger: ILogger
+  private readonly _config: IConfig['lights']
+  private readonly _appConfig: IConfig['app']
+  private readonly _logger: ILogger
 
-  private api: HueApi
+  private readonly api: HueApi
   private connected: boolean = false
   private lights: ILight[] = []
-  private lightState: lightState.State
+  private readonly lightState: lightState.State
 
   public constructor(
     @inject(TYPES.Config) config: IConfig,
@@ -27,8 +27,7 @@ class Lights implements ILights {
 
     this.lightState = lightState.create(this._config.initialState)
 
-    // tslint:disable-next-line:no-floating-promises
-    this.connect()
+    void this.connect()
   }
 
   public list: ILights['list'] = async () => {
@@ -40,15 +39,15 @@ class Lights implements ILights {
     return this.lights
   }
 
-  public toggle: ILights['toggle'] = async name => {
+  public toggle: ILights['toggle'] = async (name) => {
     if (!this.connected) {
       this._logger.error('Error toggling light', name)
       throw new Error(`Error toggling light: ${name}`)
     }
 
     await this.update()
-    const light = this.lights.find(l => l.name === name)
-    if (light) {
+    const light = this.lights.find((l) => l.name === name)
+    if (light !== undefined) {
       if (light.on) {
         await this.api.setLightState(light.id, this.lightState.off())
       } else {
@@ -61,7 +60,7 @@ class Lights implements ILights {
     }
   }
 
-  private connect = async () => {
+  private readonly connect = async (): Promise<void> => {
     try {
       await this.api.config()
       this.connected = true
@@ -77,52 +76,55 @@ class Lights implements ILights {
       try {
         await this.discover()
       } catch (err) {
-        throw new Error(`Unable to connect to a Hue Bridge`)
+        throw new Error('Unable to connect to a Hue Bridge')
       }
     }
   }
 
-  private discover = async () => {
+  private readonly discover = async (): Promise<void> => {
     try {
       const bridges = await nupnpSearch()
 
-      if (bridges.length) {
+      if (bridges.length > 0) {
         this._logger.log('Hue Bridges Found:')
         this._logger.log(JSON.stringify(bridges))
         this._logger.log(
           'please set up a user and add the data to the .env.local'
         )
         this._logger.log(
-          `check out: https://developers.meethue.com/documentation/getting-started`
+          'check out: https://developers.meethue.com/documentation/getting-started'
         )
       } else {
-        this._logger.error(`No Hue Bridges found on this network`)
+        this._logger.error('No Hue Bridges found on this network')
       }
-    } catch (err) {
-      this._logger.error(`Error discovering Hue Bridges`, err.message)
-      throw new Error(`Could not discover any Hue Bridges`)
+    } catch (error) {
+      this._logger.error(
+        'Error discovering Hue Bridges',
+        (error as Error).message
+      )
+      throw new Error('Could not discover any Hue Bridges')
     }
   }
 
-  private update = async () => {
+  private readonly update = async (): Promise<void> => {
     try {
       const state = await this.api.getFullState()
 
-      this.lights = Object.keys(state.lights).map(id => ({
+      this.lights = Object.keys(state.lights).map((id) => ({
         id,
         name: state.lights[id].name,
         on: state.lights[id].state.on,
-        toggle: () => this.toggle(state.lights[id].name)
+        toggle: async () => await this.toggle(state.lights[id].name),
       }))
-    } catch (err) {
-      this._logger.error(`Error updating state`, err)
+    } catch (error) {
+      this._logger.error('Error updating state', error)
     }
   }
 
-  private reset = async () => {
+  private readonly reset = async (): Promise<void> => {
     await this.update()
     await Promise.all(
-      this.lights.map(async light => {
+      this.lights.map(async (light) => {
         if (light.on) {
           await light.toggle()
         }

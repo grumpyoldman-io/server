@@ -74,15 +74,15 @@ export interface IApi {
 
 // Entities
 export interface IGit {
-  status(): Promise<string>
-  update(): Promise<void>
+  status: () => Promise<string>
+  update: () => Promise<void>
 }
 
 export interface IServer {
   name: IConfig['server']['name']
-  addRoutes(routes: IRoutes): IServer
-  listen(): IServer
-  close(): IServer
+  addRoutes: (routes: IRoutes) => IServer
+  listen: () => IServer
+  close: () => IServer
 }
 
 export interface ILight {
@@ -93,6 +93,6 @@ export interface ILight {
 }
 
 export interface ILights {
-  list(): Promise<ILight[]>
-  toggle(name: ILight['name']): Promise<void>
+  list: () => Promise<ILight[]>
+  toggle: (name: ILight['name']) => Promise<void>
 }

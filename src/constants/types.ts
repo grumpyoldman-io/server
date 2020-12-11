@@ -5,5 +5,5 @@ export const TYPES = {
   Server: Symbol.for('Server'),
   Admin: Symbol.for('Admin'),
   Api: Symbol.for('Api'),
-  Lights: Symbol.for('Lights')
+  Lights: Symbol.for('Lights'),
 }

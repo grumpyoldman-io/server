@@ -31,23 +31,20 @@ logger
   )
   .force()
 
-server
-  .addRoutes(admin.routes)
-  .addRoutes(api.routes)
-  .listen()
+server.addRoutes(admin.routes).addRoutes(api.routes).listen()
 
-const close = (err?: Error) => {
-  if (err) {
+const close = (err?: Error): void => {
+  if (err !== undefined) {
     logger.error(err.message)
   }
 
   // Clean up processes before closing app.
   server.close()
-  process.exit(err ? 1 : 0)
+  process.exit(err !== undefined ? 1 : 0)
 }
 
 process.on('exit', () => close())
-process.on('uncaughtException', err => close(err))
+process.on('uncaughtException', (err) => close(err))
 process.on('SIGINT', () => close())
 process.on('SIGUSR1', () => close())
 process.on('SIGUSR2', () => close())

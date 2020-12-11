@@ -7,7 +7,7 @@ import {
   IApi,
   IGit,
   IServer,
-  ILights
+  ILights,
 } from './constants/interfaces'
 import { TYPES } from './constants/types'
 

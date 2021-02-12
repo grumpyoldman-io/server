@@ -1,120 +1,109 @@
 import { injectable, inject } from 'inversify'
-import kleur from 'kleur'
+import kleur, { Kleur } from 'kleur'
 
-import { IConfig, ILogger } from '../constants/interfaces'
+import { IConfig, ILogger, ILogReturn } from '../constants/interfaces'
 import { TYPES } from '../constants/types'
 
 @injectable()
 class Logger implements ILogger {
-  private readonly _config: IConfig['log']
+  private readonly config: IConfig['log']
+  private readonly appConfig: IConfig['app']
 
-  private prefix: string
-  private output: () => void
+  private prefix: string = ''
+  public readonly level: ILogger['level']
 
   public constructor(@inject(TYPES.Config) config: IConfig) {
-    this._config = config.log
-    this.prefix = ''
-    this.output = () => null
+    this.config = config.log
+    this.appConfig = config.app
+
+    this.level = this.config.level
   }
 
-  public setPrefix: ILogger['setPrefix'] = (prefix, color) => {
-    this.prefix = kleur[color ?? 'white'](`[${prefix}]`)
+  public readonly create: ILogger['create'] = (entity, color = 'cyan') => {
+    this.prefix = kleur[color](`[${entity}]`)
     return this
   }
 
-  public log: ILogger['log'] = (message, ...optionalParams) => {
-    this.output = () =>
+  public readonly debug: ILogger['debug'] = (message, ...optionalParams) =>
+    this.outputMessage(
+      'debug',
+      'blue',
+      ['debug', 'all'],
+      message,
+      optionalParams
+    )
+
+  public readonly log: ILogger['log'] = (message, ...optionalParams) =>
+    this.outputMessage(
+      'log',
+      'gray',
+      ['debug', 'all', 'basic'],
+      message,
+      optionalParams
+    )
+
+  public readonly info: ILogger['info'] = (message, ...optionalParams) =>
+    this.outputMessage(
+      'info',
+      'white',
+      ['debug', 'all', 'basic', 'info'],
+      message,
+      optionalParams
+    )
+
+  public readonly warn: ILogger['warn'] = (message, ...optionalParams) =>
+    this.outputMessage(
+      'warn',
+      'yellow',
+      ['debug', 'all', 'basic', 'info'],
+      message,
+      optionalParams
+    )
+
+  public readonly error: ILogger['error'] = (message, ...optionalParams) =>
+    this.outputMessage(
+      'error',
+      'red',
+      ['debug', 'all', 'basic', 'info'],
+      message,
+      optionalParams
+    )
+
+  private readonly outputMessage = (
+    level: 'debug' | 'log' | 'info' | 'warn' | 'error',
+    color: keyof Kleur,
+    levels: Array<IConfig['log']['level']>,
+    message: any,
+    optionalParams: any[]
+  ): ILogReturn => {
+    let output = (): void =>
       // eslint-disable-next-line no-console
-      console.info(
+      console[level](
         this.timeStamp(),
         this.prefix,
-        kleur.grey(this.formatMessage(message)),
-        ...optionalParams
-      )
-    if (this._config.level !== 'none') {
-      this.output()
-      this.resetOutput()
-    }
-
-    return this
-  }
-
-  public info: ILogger['info'] = (message, ...optionalParams) => {
-    this.output = () =>
-      // eslint-disable-next-line no-console
-      console.info(
-        this.timeStamp(),
-        this.prefix,
-        kleur.white(this.formatMessage(message)),
+        kleur[color](message),
         ...optionalParams
       )
 
-    if (this._config.level === 'all') {
-      this.output()
-      this.resetOutput()
+    if (levels.includes(this.config.level)) {
+      output()
+      output = () => null
     }
 
-    return this
+    return this.returnForce(output)
   }
 
-  public warn: ILogger['warn'] = (message, ...optionalParams) => {
-    this.output = () =>
-      // eslint-disable-next-line no-console
-      console.warn(
-        this.timeStamp(),
-        this.prefix,
-        kleur.yellow(this.formatMessage(message)),
-        ...optionalParams
-      )
-
-    if (this._config.level !== 'none') {
-      this.output()
-      this.resetOutput()
-    }
-
-    return this
-  }
-
-  public error: ILogger['error'] = (message, ...optionalParams) => {
-    this.output = () =>
-      // eslint-disable-next-line no-console
-      console.error(
-        this.timeStamp(),
-        this.prefix,
-        kleur.red(this.formatMessage(message)),
-        ...optionalParams
-      )
-
-    if (this._config.level !== 'none') {
-      this.output()
-      this.resetOutput()
-    }
-
-    return this
-  }
-
-  public force: ILogger['force'] = () => {
-    this.output()
-    this.resetOutput()
-
-    return this
-  }
+  private readonly returnForce = (output: () => void): ILogReturn => ({
+    force: output,
+  })
 
   private readonly timeStamp = (): string => {
     const date = new Date()
-    return kleur.grey(`[${date.toISOString()}]`)
-  }
-
-  private readonly formatMessage = (message: any): string => {
-    if (typeof message === 'object') {
-      return JSON.stringify(message, null, 2)
-    }
-
-    return String(message)
-  }
-
-  private readonly resetOutput = (): void => {
-    this.output = () => null
+    return kleur.grey(
+      `[${date.toLocaleString(this.appConfig.locale, {
+        timeZone: this.appConfig.timezone,
+      })}]`
+    )
   }
 }
 

@@ -1,15 +1,23 @@
 import { createServer, Server as HttpServer, RequestListener } from 'http'
 import { injectable, inject } from 'inversify'
+import { match, MatchResult } from 'path-to-regexp'
+// import { match } from 'path-to-regexp'
 
-import { IServer, IConfig, ILogger, IRoutes } from '../constants/interfaces'
+import {
+  IServer,
+  IConfig,
+  ILogger,
+  IRequest,
+  IRoutes,
+} from '../constants/interfaces'
 import { TYPES } from '../constants/types'
 
 @injectable()
 class Server implements IServer {
   public name: string
 
-  private readonly _config: IConfig['server']
-  private readonly _logger: ILogger
+  private readonly config: IConfig['server']
+  private readonly logger: ILogger
 
   private listening: boolean = false
   private readonly server: HttpServer
@@ -24,11 +32,11 @@ class Server implements IServer {
     @inject(TYPES.Config) config: IConfig,
     @inject(TYPES.Logger) logger: ILogger
   ) {
-    this._config = config.server
-    this._logger = logger.setPrefix('Server', 'blue')
+    this.config = config.server
+    this.logger = logger.create('Server', 'blue')
 
     this.server = createServer(this.handleRequest)
-    this.name = this._config.name
+    this.name = this.config.name
   }
 
   public addRoutes = (routes: IRoutes): Server => {
@@ -42,10 +50,10 @@ class Server implements IServer {
   }
 
   public listen = (): Server => {
-    this.server.listen(this._config.port)
+    this.server.listen(this.config.port)
     this.listening = true
 
-    this._logger.info(`Listening on port ${this._config.port}`).force()
+    this.logger.info(`Listening on port ${this.config.port}`).force()
 
     return this
   }
@@ -54,7 +62,7 @@ class Server implements IServer {
     if (this.listening) {
       this.server.close()
       this.listening = false
-      this._logger.info('stopped listening')
+      this.logger.info('stopped listening')
     }
 
     return this
@@ -80,18 +88,44 @@ class Server implements IServer {
       return res.end()
     }
 
-    if (!(req.headers.accept?.includes('application/json') ?? false)) {
+    if (
+      req.headers.accept?.includes('application/json') !== true &&
+      req.headers.accept?.includes('application/*') !== true &&
+      req.headers.accept?.includes('*/*') !== true
+    ) {
       res.statusCode = 406
       return res.end()
     }
 
     res.setHeader('Content-Type', 'application/json')
 
-    if (this.routes[method]?.[url] !== undefined) {
-      this.routes[method][url]((data = { message: 'ok' }, statusCode = 200) => {
-        res.statusCode = statusCode
-        res.end(JSON.stringify(data))
-      })
+    let matchedRoute:
+      | (MatchResult<IRequest['params']> & { route: string })
+      | undefined
+    Object.keys(this.routes[method]).find((path) => {
+      const findMatch = match(path, { decode: decodeURIComponent })(url)
+      if (typeof findMatch === 'object') {
+        matchedRoute = {
+          ...(findMatch as MatchResult<IRequest['params']>),
+          route: path,
+          params: { ...findMatch.params },
+        }
+        return true
+      }
+      return false
+    })
+
+    if (matchedRoute !== undefined) {
+      this.routes[method][matchedRoute.route](
+        ({
+          ...req,
+          params: matchedRoute.params,
+        } as unknown) as IRequest,
+        (data = { message: 'ok' }, statusCode = 200) => {
+          res.statusCode = statusCode
+          res.end(JSON.stringify(data))
+        }
+      )
     } else {
       res.statusCode = 404
       res.end('{"error":"Not Found"}')

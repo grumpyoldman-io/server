@@ -1,4 +1,4 @@
-FROM 8-alpine
+FROM lts-alpine
 
 # Create app directory
 RUN mkdir -p /home/node/app

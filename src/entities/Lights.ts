@@ -6,9 +6,9 @@ import { TYPES } from '../constants/types'
 
 @injectable()
 class Lights implements ILights {
-  private readonly _config: IConfig['lights']
-  private readonly _appConfig: IConfig['app']
-  private readonly _logger: ILogger
+  private readonly config: IConfig['lights']
+  private readonly appConfig: IConfig['app']
+  private readonly logger: ILogger
 
   private readonly api: HueApi
   private connected: boolean = false
@@ -19,33 +19,25 @@ class Lights implements ILights {
     @inject(TYPES.Config) config: IConfig,
     @inject(TYPES.Logger) logger: ILogger
   ) {
-    this._config = config.lights
-    this._appConfig = config.app
-    this._logger = logger.setPrefix('Lights', 'magenta')
+    this.config = config.lights
+    this.appConfig = config.app
+    this.logger = logger.create('Lights', 'magenta')
 
-    this.api = new HueApi(this._config.host, this._config.user)
+    this.api = new HueApi(this.config.host, this.config.user)
 
-    this.lightState = lightState.create(this._config.initialState)
+    this.lightState = lightState.create(this.config.initialState)
 
     void this.connect()
   }
 
-  public list: ILights['list'] = async () => {
-    await this.update()
-    this._logger.log(
-      'lights',
-      this.lights.map(({ on, name }) => ({ on, name }))
-    )
-    return this.lights
-  }
+  public list: ILights['list'] = () => this.lights
 
   public toggle: ILights['toggle'] = async (name) => {
     if (!this.connected) {
-      this._logger.error('Error toggling light', name)
+      this.logger.error('Error toggling light', name)
       throw new Error(`Error toggling light: ${name}`)
     }
 
-    await this.update()
     const light = this.lights.find((l) => l.name === name)
     if (light !== undefined) {
       if (light.on) {
@@ -53,9 +45,10 @@ class Lights implements ILights {
       } else {
         await this.api.setLightState(light.id, this.lightState.on())
       }
-      this._logger.log('toggled light', name)
+      await this.update()
+      this.logger.log('toggled light', name)
     } else {
-      this._logger.error('Error toggling light', name)
+      this.logger.error('Error toggling light', name)
       throw new Error(`Error toggling light: ${name}`)
     }
   }
@@ -65,13 +58,26 @@ class Lights implements ILights {
       await this.api.config()
       this.connected = true
     } catch (err) {
-      this._logger.error('Error connecting to Hue Bridge')
+      this.logger.error('Error connecting to Hue Bridge')
     }
 
     if (this.connected) {
-      if (this._appConfig.environment !== 'development') {
+      await this.update()
+
+      if (this.appConfig.environment !== 'development') {
         await this.reset()
       }
+
+      this.logger.log(
+        'lights',
+        this.lights.reduce(
+          (lights, light) => ({
+            ...lights,
+            [light.name]: light.on ? 'on' : 'off',
+          }),
+          {}
+        )
+      )
     } else {
       try {
         await this.discover()
@@ -86,19 +92,19 @@ class Lights implements ILights {
       const bridges = await nupnpSearch()
 
       if (bridges.length > 0) {
-        this._logger.log('Hue Bridges Found:')
-        this._logger.log(JSON.stringify(bridges))
-        this._logger.log(
+        this.logger.log('Hue Bridges Found:')
+        this.logger.log(JSON.stringify(bridges))
+        this.logger.log(
           'please set up a user and add the data to the .env.local'
         )
-        this._logger.log(
+        this.logger.log(
           'check out: https://developers.meethue.com/documentation/getting-started'
         )
       } else {
-        this._logger.error('No Hue Bridges found on this network')
+        this.logger.error('No Hue Bridges found on this network')
       }
     } catch (error) {
-      this._logger.error(
+      this.logger.error(
         'Error discovering Hue Bridges',
         (error as Error).message
       )
@@ -117,12 +123,11 @@ class Lights implements ILights {
         toggle: async () => await this.toggle(state.lights[id].name),
       }))
     } catch (error) {
-      this._logger.error('Error updating state', error)
+      this.logger.error('Error updating state', error)
     }
   }
 
   private readonly reset = async (): Promise<void> => {
-    await this.update()
     await Promise.all(
       this.lights.map(async (light) => {
         if (light.on) {
@@ -130,6 +135,7 @@ class Lights implements ILights {
         }
       })
     )
+    await this.update()
   }
 }
 

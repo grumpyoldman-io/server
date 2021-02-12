@@ -1,6 +1,6 @@
 {
   "name": "home-automation-server",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Home Automation Server built with TS and DI",
   "author": "Marvin de Bruin<hello@grumpyoldman.io>",
   "license": "MIT",
@@ -17,6 +17,7 @@
     "inversify": "5.0.5",
     "kleur": "4.1.4",
     "node-hue-api": "2.4.6",
+    "path-to-regexp": "6.2.0",
     "reflect-metadata": "0.1.13"
   },
   "devDependencies": {

@@ -1,6 +1,13 @@
 import { injectable, inject } from 'inversify'
+// import { match } from 'path-to-regexp'
 
-import { IApi, IConfig, ILights, IRoutes } from '../constants/interfaces'
+import {
+  IApi,
+  IConfig,
+  ILogger,
+  ILights,
+  IRoutes,
+} from '../constants/interfaces'
 import { TYPES } from '../constants/types'
 
 @injectable()
@@ -9,96 +16,87 @@ class Api implements IApi {
     get: {},
   }
 
-  private readonly _config: IConfig['api']
-  private readonly _switchConfig: IConfig['switches']
-  private readonly _lights: ILights
+  private readonly config: IConfig['api']
+  private readonly logger: ILogger
+  private readonly lights: ILights
 
   public constructor(
     @inject(TYPES.Config) config: IConfig,
+    @inject(TYPES.Logger) logger: ILogger,
     @inject(TYPES.Lights) lights: ILights
   ) {
-    this._config = config.api
-    this._switchConfig = config.switches
-    this._lights = lights
+    this.config = config.api
+    this.logger = logger.create('API', 'cyan')
+    this.lights = lights
 
     this.setRoutes()
   }
 
   private readonly setRoutes = (): void => {
-    Object.keys(this._switchConfig).forEach((switchId) => {
-      this.routes.get[
-        this.createRouteWithParams(this._config.routes.switch, {
-          id: switchId,
-        })
-      ] = async (respond) => {
-        try {
-          await this._lights.toggle(this._switchConfig[switchId])
-          respond({ message: `${switchId} toggled` }, 200)
-        } catch (error) {
-          respond(
-            {
-              error: `Error toggling ${switchId}`,
-              details: (error as Error).message,
-            },
-            500
-          )
-        }
-      }
-    })
-
-    this.routes.get[this._config.routes.lights] = async (respond) => {
+    this.routes.get[this.config.routes.light] = async (request, response) => {
+      const hrStart = process.hrtime()
       try {
-        const lightList = (await this._lights.list()).map(({ name, on }) => ({
+        if (request.params?.name === undefined) {
+          throw new Error('Light name not given')
+        }
+
+        const light = this.lights
+          .list()
+          .map(({ name, on }) => ({
+            id: name,
+            on,
+          }))
+          .find(
+            (light) =>
+              light.id.toLowerCase() === request.params.name.toLowerCase()
+          )
+
+        if (light === undefined) {
+          throw new Error('Light not found')
+        }
+
+        await this.lights.toggle(light.id)
+        response({ message: `${light.id} toggled` }, 200)
+      } catch (error) {
+        response(
+          {
+            error: `Error toggling ${request.params?.name ?? 'light'}`,
+            details: (error as Error).message,
+          },
+          500
+        )
+      }
+      const hrEnd = process.hrtime(hrStart)
+      this.logger.log(
+        'handled',
+        this.config.routes.light,
+        `in ${hrEnd[1] / 1000000 + hrEnd[0] * 1000}ms`
+      )
+    }
+
+    this.routes.get[this.config.routes.lights] = (_request, response) => {
+      const hrStart = process.hrtime()
+      try {
+        const lightList = this.lights.list().map(({ name, on }) => ({
           id: name,
           on,
         }))
 
-        respond(lightList, 200)
+        response(lightList, 200)
       } catch (error) {
-        respond(
+        response(
           { error: 'Error getting status', details: (error as Error).message },
           500
         )
       }
-    }
-
-    this.routes.get[this._config.routes.switches] = (respond) => {
-      try {
-        const switchesList = Object.keys(this._switchConfig).reduce<
-          Array<{ id: string; name: string; path: string }>
-        >(
-          (switches, id) => [
-            ...switches,
-            {
-              id,
-              name: this._switchConfig[id],
-              path: this.createRouteWithParams(this._config.routes.switch, {
-                id,
-              }),
-            },
-          ],
-          []
-        )
-
-        respond(switchesList, 200)
-      } catch (error) {
-        respond(
-          { error: 'Error getting status', details: (error as Error).message },
-          500
-        )
-      }
+      const hrEnd = process.hrtime(hrStart)
+      this.logger.log(
+        'handled',
+        this.config.routes.light,
+        `in ${hrEnd[1] / 1000000 + hrEnd[0] * 1000}ms`
+      )
     }
   }
-
-  private readonly createRouteWithParams = (
-    route: string,
-    params: { [key: string]: string }
-  ): string =>
-    Object.keys(params).reduce(
-      (newRoute, key) =>
-        newRoute.replace(new RegExp(`:${key}`, 'g'), params[key]),
-      route
-    )
 }
 
 export default Api

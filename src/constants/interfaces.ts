@@ -1,4 +1,5 @@
-import { Kleur } from 'kleur'
+import { IncomingMessage } from 'http'
+import kleur from 'kleur'
 
 // Application
 export interface IConfig {
@@ -6,26 +7,18 @@ export interface IConfig {
     environment: 'development' | 'test' | 'production'
     version: string
     commitHash: string
+    timezone: string
+    locale: string
   }
   log: {
-    level: 'all' | 'basic' | 'none'
+    level: 'debug' | 'basic' | 'info' | 'all' | 'none'
   }
   server: {
     name: string
     port: number
   }
-  admin: {
-    routes: {
-      status: string
-      update: string
-    }
-  }
   api: {
-    routes: {
-      lights: string
-      switch: string
-      switches: string
-    }
+    routes: Record<string, string>
   }
   lights: {
     host: string
@@ -38,34 +31,41 @@ export interface IConfig {
       ct: number
     }
   }
-  switches: {
-    [id: string]: string
-  }
+}
+
+export interface ILogReturn {
+  force: () => void
 }
 
 export interface ILogger {
-  setPrefix: (
-    prefix: string,
-    color?: Exclude<keyof Kleur, 'white' | 'grey' | 'yellow' | 'red'>
+  level: IConfig['log']['level']
+  create: (
+    entity: string,
+    color?: Exclude<keyof kleur.Kleur, 'white' | 'grey' | 'yellow' | 'red'>
   ) => ILogger
-  log: (message?: any, ...optionalParams: any[]) => ILogger
-  info: (message?: any, ...optionalParams: any[]) => ILogger
-  warn: (message?: any, ...optionalParams: any[]) => ILogger
-  error: (message?: any, ...optionalParams: any[]) => ILogger
-  force: () => ILogger
+  debug: (message?: any, ...optionalParams: any[]) => ILogReturn
+  log: (message?: any, ...optionalParams: any[]) => ILogReturn
+  info: (message?: any, ...optionalParams: any[]) => ILogReturn
+  warn: (message?: any, ...optionalParams: any[]) => ILogReturn
+  error: (message?: any, ...optionalParams: any[]) => ILogReturn
+}
+
+export interface IMetrics {
+  start: (ID: string) => () => number
 }
 
 // Interfaces
+
+export interface IRequest extends IncomingMessage {
+  params: Record<string, string>
+}
 export interface IRoutes {
   [method: string]: {
     [path: string]: (
-      callback: (data: object, statusCode: number | 200) => void
+      request: IRequest,
+      response: (data: object, statusCode: number | 200) => void
     ) => void
   }
-}
-
-export interface IAdmin {
-  routes: IRoutes
 }
 
 export interface IApi {
@@ -73,11 +73,6 @@ export interface IApi {
 }
 
 // Entities
-export interface IGit {
-  status: () => Promise<string>
-  update: () => Promise<void>
-}
-
 export interface IServer {
   name: IConfig['server']['name']
   addRoutes: (routes: IRoutes) => IServer
@@ -93,6 +88,6 @@ export interface ILight {
 }
 
 export interface ILights {
-  list: () => Promise<ILight[]>
+  list: () => ILight[]
   toggle: (name: ILight['name']) => Promise<void>
 }

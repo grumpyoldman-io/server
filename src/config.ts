@@ -1,9 +1,31 @@
-import { IConfig } from '../constants/interfaces'
+import fs from 'fs'
+import { IConfig } from './constants/interfaces'
+
+let COMMIT_HASH: string
+if (process.env.COMMIT_HASH === undefined) {
+  try {
+    COMMIT_HASH = fs.readFileSync('.git/HEAD').toString().trim()
+    if (COMMIT_HASH.includes(':')) {
+      COMMIT_HASH = fs
+        .readFileSync('.git/' + COMMIT_HASH.substring(5))
+        .toString()
+        .trim()
+    }
+  } catch {
+    COMMIT_HASH = 'n.a.'
+  }
+} else {
+  COMMIT_HASH = 'n.a.'
+}
 
 const ENV =
   (process.env.NODE_ENV as IConfig['app']['environment']) ?? 'production'
-const VERSION = process.env.VERSION ?? 'n.a.'
-const COMMIT_HASH = process.env.COMMIT_HASH ?? 'n.a.'
+const VERSION = process.env.VERSION ?? process.env.npm_package_version ?? 'n.a.'
+const TIMEZONE = process.env.TIMEZONE ?? process.env.TZ ?? 'GMT'
+const LOCALE =
+  process.env.LOCALE ??
+  Intl.DateTimeFormat().resolvedOptions().locale ??
+  'en-GB'
 
 const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '3000', 10)
 
@@ -12,24 +34,13 @@ const LOG_LEVEL = (process.env.LOG_LEVEL ?? 'basic') as IConfig['log']['level']
 const HUE_HOST = process.env.HUE_HOST ?? ''
 const HUE_USER = process.env.HUE_USER ?? ''
 
-const BUTTON_PREFIX = 'SWITCH_'
-
-const switches = Object.keys(process.env).reduce(
-  (switchIds, envKey) =>
-    envKey.startsWith(BUTTON_PREFIX)
-      ? {
-          ...switchIds,
-          [envKey.replace(BUTTON_PREFIX, '')]: process.env[envKey],
-        }
-      : switchIds,
-  {}
-)
-
 const config: IConfig = {
   app: {
     environment: ENV,
     version: VERSION,
     commitHash: COMMIT_HASH,
+    timezone: TIMEZONE,
+    locale: LOCALE,
   },
   log: {
     level: LOG_LEVEL,
@@ -38,17 +49,10 @@ const config: IConfig = {
     name: 'HomeAutomation',
     port: SERVER_PORT,
   },
-  admin: {
-    routes: {
-      status: '/status',
-      update: '/update',
-    },
-  },
   api: {
     routes: {
       lights: '/lights',
-      switches: '/switches',
-      switch: '/switches/:id/toggle',
+      light: '/lights/:name/toggle',
     },
   },
   lights: {
@@ -62,7 +66,6 @@ const config: IConfig = {
       ct: 365,
     },
   },
-  switches,
 }
 
 export default config
